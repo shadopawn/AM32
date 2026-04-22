@@ -476,6 +476,7 @@ void loadEEpromSettings()
       
         // max_ramp is later divided by 10 so this is effectively 16
         eepromBuffer.max_ramp = 160;    // 0.1% per ms to 25% per ms 
+        // Also set to default 4 in DroneCAN.c
         eepromBuffer.minimum_duty_cycle = 1; // 0.2% to 51 percent
 
 
@@ -544,35 +545,32 @@ void setInput()
     input = newinput;
 
 
-    if (!stepper_sine && armed) {
-        if (input >= 47) {
-            if (running == 0) {
+    if (input >= 47) {
+        if (running == 0) {
 
-                running = 1;
-                last_duty_cycle = min_startup_duty;
-            }
-
-
-            duty_cycle_setpoint = map(input, 47, 2047, minimum_duty_cycle, 2000);
-
+            running = 1;
+            last_duty_cycle = min_startup_duty;
         }
 
-        if (!prop_brake_active) {
-            if (input >= 47 && (zero_crosses < (uint32_t)(30 >> eepromBuffer.stall_protection))) {
-                if (duty_cycle_setpoint < min_startup_duty) {
-                    duty_cycle_setpoint = min_startup_duty;
-                }
-                if (duty_cycle_setpoint > startup_max_duty_cycle) {
-                    duty_cycle_setpoint = startup_max_duty_cycle;
-                }
-            }
 
-            if (duty_cycle_setpoint > duty_cycle_maximum) {
-                duty_cycle_setpoint = duty_cycle_maximum;
-            }
+        duty_cycle_setpoint = map(input, 47, 2047, minimum_duty_cycle, 2000);
 
-        }
     }
+
+    // if (input >= 47 && (zero_crosses < (uint32_t)(30 >> eepromBuffer.stall_protection))) {
+    //     if (duty_cycle_setpoint < min_startup_duty) {
+    //         duty_cycle_setpoint = min_startup_duty;
+    //     }
+    //     if (duty_cycle_setpoint > startup_max_duty_cycle) {
+    //         duty_cycle_setpoint = startup_max_duty_cycle;
+    //     }
+    // }
+
+    if (duty_cycle_setpoint > duty_cycle_maximum) {
+        duty_cycle_setpoint = duty_cycle_maximum;
+    }
+
+
 }
 
 void tenKhzRoutine()
@@ -588,6 +586,7 @@ void tenKhzRoutine()
         if (zero_crosses < 150 || last_duty_cycle < 150) {
             max_duty_cycle_change = max_ramp_startup;
         } else {
+            // rpm < 571.43
             if (average_interval > 500) { // 571.43 rpm if accounting for 14 motor poles
                 max_duty_cycle_change = max_ramp_low_rpm;
             } else {
@@ -617,8 +616,6 @@ void tenKhzRoutine()
     last_duty_cycle = duty_cycle;
 
     SET_DUTY_CYCLE_ALL(adjusted_duty_cycle);
-
-
 
 }
 
