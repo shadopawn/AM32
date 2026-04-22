@@ -268,9 +268,9 @@ void zcfoundroutine(void);
 EEprom_t eepromBuffer;
 volatile uint32_t polling_mode_changeover;
 volatile uint8_t ramp_divider;
-volatile uint8_t max_ramp_startup = RAMP_SPEED_STARTUP; // 0.0001 ramp per second in 20 kz loop
-volatile uint8_t max_ramp_low_rpm = RAMP_SPEED_LOW_RPM; // 0.0003 ramp per second in 20 kz loop
-volatile uint8_t max_ramp_high_rpm = RAMP_SPEED_HIGH_RPM; // 0.0008 ramp per second in 20 kz loop
+volatile uint8_t max_ramp_startup = RAMP_SPEED_STARTUP; // 40,000 ramp per second in 20 kz loop
+volatile uint8_t max_ramp_low_rpm = RAMP_SPEED_LOW_RPM; // 120,000 ramp per second in 20 kz loop
+volatile uint8_t max_ramp_high_rpm = RAMP_SPEED_HIGH_RPM; // 320,000 ramp per second in 20 kz loop
 char send_esc_info_flag;
 uint32_t eeprom_address = EEPROM_START_ADD; 
 uint16_t prop_brake_duty_cycle = 0;
@@ -606,16 +606,9 @@ void tenKhzRoutine()
         duty_cycle = last_duty_cycle;
     }
 
-    if ((armed && running) && input > 47) {
-
-        adjusted_duty_cycle = ((duty_cycle * tim1_arr) / 2000) + 1;
-
-    }
-
 
     last_duty_cycle = duty_cycle;
 
-    SET_DUTY_CYCLE_ALL(adjusted_duty_cycle);
 
 }
 
